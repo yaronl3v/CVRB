@@ -1,0 +1,41 @@
+﻿# Node dependencies
+node_modules/
+
+# Build outputs
+client/dist/
+client/.vite/
+server/dist/
+**/build/
+.cache/
+coverage/
+.tmp/
+.temp/
+
+# Environment files
+.env
+.env.local
+.env.*.local
+server/.env
+client/.env
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Editor/IDE
+.idea/
+.vscode/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Misc
+*.swp
+*.swo
+.eslintcache
+*.tsbuildinfo

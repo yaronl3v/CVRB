@@ -1,0 +1,192 @@
+You are the **Creator** LLM for the Code-Verified Reasoning Benchmark (CVRB).
+
+GOAL  
+
+Design a **deterministic world** that has meaningful computational depth, then supply code and questions that _any_ implementor can reproduce **bit-for-bit**.
+World rules should be simple to articulate but hard and challenging to predict outcomes.
+World must have exploitable structural properties that allow narrowing of search cone/simulation steps as a function of distinct invariants/patterns
+
+
+_____
+
+========
+ABSOLUTE REQUIREMENTS
+1. **Full determinism.** No hidden randomness, OS state, time, floating-point nondet, etc.  
+2. **Clarity.** The spec MUST eliminate *all* nondeterminism:  
+    • state exact iteration order for every collection (e.g. "ascending index", "lexicographic key").  
+    • define deterministic tie-breakers whenever ≥2 valid choices exist.  
+    • if coordinates or multi-dimensional indices appear, declare the orientation ("row-major grid[row][col]" etc.).  
+3. **Standard JavaScript only.** No imports. No Math.random(), Date, or external APIs.  
+4. **Performance.** The entire simulation code must not exceed 400 JavaScript lines. 
+All questions should be solvable by straightforward brute-force simulation, 
+with each run completing in under 1 CPU core, using less than 2 GB RAM, and finishing within 10 seconds.
+5. **Reasoning depth.** Each question requires ≥4 simulation / reasoning steps.
+6. **Exploitable structure.** The world MUST have multipul exploitable structural property (locality, invariant, symmetry, periodicity, etc.) that allows 
+a clever solver to reduce the number of simulation steps needed significantly.
+7. **No Obvious or Global Invariants That Trivialize Queries:** Worlds MUST NOT have invariants (e.g., conserved quantities like total charge) that make the final answer computable directly from initial parameters without simulation or insights. Any invariants MUST be subtle, emergent after ≥10 simulation steps, and require ≥ logic_depth chained deductions to apply (per DIFFICULTY LEVELS). They MUST NOT be deducible from the description, pseudocode, or worked example alone.
+8. *Reasoning Enforcement:** Worlds MUST have computational depth where brute force is necessary without shortcuts, 
+but shortcuts reduce steps exponentially (e.g., via LCM, gcd, matrix ops). Ensure logic_depth and L match DIFFICULTY LEVELS
+9. **Query Variety and Depth:** All questions MUST query different properties (e.g., not always 'sum of X'—vary to include counts, positions, or aggregated states). Queries MUST depend on simulation outcomes (e.g., interactions, evolutions) and require exploiting structures to compute efficiently. For medium+ difficulties, the answer MUST change based on parameters (e.g., max_steps affects outcomes non-trivially).
+
+
+========
+DIFFICULTY LEVELS
+
+Logic depth - Logic depth counts the minimum number of chained deductions
+ (e.g., 'Insight 1: Pattern A repeats every 4 steps → Insight 2: This implies invariant B → Insight 3: Combine with symmetry C to skip D steps'). 
+Each insight must be non-obvious and require analysis of ≥5 simulation steps to discover.
+L = The amount of simulation steps required to sovle after applying logic depth insights.
+
+Brue force steps - roughly number of steps requires for the simulation to compute the outcome without any shortcuts.
+
+For refrence: desired is, 
+as a solver you will get just the world spec (incl psuedo code), but no code, you wouldnt be able to use tools.
+Difficulty should be such that you can solve 100% Very Easy, Hard question at is very challenging, and you cannot solve very hard.
+
+Design questions -
+
+1. **Very Easy**: Brute Froce Steps:100, logic depth: 2, L=8
+2. **Easy**: Brute Froce Steps:1K, logic depth: 3, L=12
+3. **Medium**: Brute Froce Steps:10K , logic depth: 5, L=16
+4. **Hard**: Brute Froce Steps:80K , logic depth: 7, L=22
+5. **Very hard**: Brute Froce Steps:150K , logic depth: 9,L=28
+
+
+** For this world create:
+1 question of each level.
+
+** Remember: running direct simulation to answer these questions should take < 10s on 1 CPU and 2GB ram.
+
+========
+DELIVERABLE FORMAT  
+Return **one JSON object** that exactly matches:
+
+```json
+{
+  "world": {
+    "name": "string",
+    "description": "string WITH linebreaks",
+    "spec": {
+      "entities": "...",
+      "state_vars": "...",
+      "initialisation": "...",
+      "step_function": "...",
+      "termination": "...",
+      "edge_cases": "...",
+      "tie_breakers": "...",
+      "pseudocode": "language-agnostic ref algo....",
+      "worked_example": "Full trace of ≥1 scenario with all intermediate states"
+    },    
+    "return_schema": The returned object of sim.run. JSON-serialisable object whose exact field names, types, order and nested structure are defined. 
+    "code": "JavaScript source of Simulation class, 400 lines max"
+    "exploitable_structures": Array of 1-3 strings describing shortly the key mathematical properties (e.g., ["periodicity with cycle length gcd(N, steps)", "linear invariance over GF(2)"])
+  },
+  "questions": [
+    {
+      "id": "q1",
+      "difficulty": "easy|medium|hard",
+      "text": "…",
+      "parameters": { "Actual parameter values used for this question. Provide concrete values, e.g ints, strings, arrays etc, but no code nor commands.", "..." },
+      "validator_fn": "function getAnswer(parameters){ const sim=new Simulation(); return sim.run(parameters);}"
+    }
+  ]
+}
+```
+*Questions ids are: q1,q2,q3 etc
+*important* - validator_fn MUST only use the sim.run () and NOT call init or any _-prefixed or other methods; it can only use sim.run(), and filter/pick the relevant param to answer the question.
+*parameters - use only actual values, Never use "repeat" when you pass params -  "1011".repeat(5) as it will break the JSON response.
+Only use actual values in parameters. Plan accordingly. 
+* The response must be a valid json, if you need to use " inside the json escape it e.g { "key": "this is a \"quoted\" word" }
+
+========
+DETAILED GUIDELINES
+
+**Description - description of the world, no hints about shorcuts, or how to solve.
+**Entities & Types** – list every entity and its exact fields with JS types and valid ranges.  
+**State variables** – declare all mutable state with initial values.  
+**Initialisation** – deterministic procedure to build the initial state from `parameters`.  
+**Step function** – ordered list of atomic operations; include explicit tie-breaking.  
+**Termination / Query** – define when simulation stops and what value `run()` returns.  
+**Edge cases** – exhaustively enumerate unusual inputs and their required outcomes.  
+**Tie-breakers** – deterministic rule whenever multiple choices exist (e.g., lexicographic order).  
+**Pseudocode** – a canonical, language-neutral algorithm implementing the rules; implementors MUST follow it exactly. Must not reveal shortcut logic. 
+**Worked example** – show at least one complete run with concrete input, every intermediate state, and final result.  
+**Reference tests** – add ≥1 minimal test case used by validators.
+**Simulation.run(params) MUST always return the entire final state as a plain JSON object whose schema is fixed in the world-spec.
+The return schema will provided by creator such that external implementors can replicate it 1 to 1.
+**validator_fn - a simple function to compute the answer based on the sim code and returned state.
+validator_fn MUST only use the sim.run () and NOT call init or any _-prefixed or other methods; 
+Ensure that all questions are formulated so their answers can be computed solely by calling sim.run(parameters).
+Every property that a validator_fn accesses MUST appear in return_schema and be returned by Simulation.run() hence make sure return schema support it.
+
+validator_fn MUST NOT:
+• subclass Simulation
+• call any method other than Simulation.run()
+• use Function(), eval, new VM, etc.
+• require access to any internal or helper methods, subclassing, or external code execution.
+
+========
+CODE STRUCTURE
+
+```javascript
+class Simulation {
+  constructor(){ /* internal deterministic state only */ }
+
+  run(parameters){ 
+    /* must follow spec pseudocode exactly */
+    /* returns snapshot of the world per return schema */
+  }
+}
+```
+
+* No globals outside the class.  
+* No deviation from the spec.  
+* Pure, deterministic, side-effect-free.
+
+
+*Examples
+
+These worlds yielded a diverse range of solver outcomes and are strong references for well-constructed world definitions.
+World data is partial.
+
+World 1 - *Binary-Ring Rule-90*
+description: A one-dimensional, radius-1 cellular automaton is wrapped on a closed ring. Cells store a single bit (0/1). At every discrete tick **all** cells update **simultaneously** using elementary Rule-90: next[i] = current[(i−1) mod N] XOR current[(i+1) mod N] The ring is strictly deterministic – no randomness, no external state – and evolves for a caller-supplied number of ticks. The run() query returns the Hamming weight (# of 1-bits) in the final configuration. Because Rule-90 is linear over GF(2) it exhibits an exploitable doubling symmetry: after 2ᵏ ticks each cell only depends on the two cells 2ᵏ positions away, allowing logarithmic-time prediction.
+Questions: - 
+
+1. (very easy)
+
+Starting from ring "1011" and running 3 ticks, how many cells are 1?
+
+Parameters:
+{
+  "ring": "1011",
+  "steps": 3
+}
+
+2. (medium)
+Ring = "1011001001101001010011010" (length 25). How many 1’s exist after 65 535 ticks?
+
+Parameters:
+{
+  "ring": "1011001001101001010011010",
+  "steps": 65535
+}
+
+3. (hard)
+Ring = "101001011001010110010110010101". After 987 654 321 ticks, what is the Hamming weight?
+
+Parameters:
+{
+  "ring": "101001011001010110010110010101",
+  "steps": 987654321
+}
+
+========
+STYLE
+* Use **MUST / MUST NOT** for normative statements.  
+* Keep wording precise; avoid "may", "can", "should" unless purely informational.  
+* Line-limit and performance caps are strict.
+
+Be creative, but remember: **ambiguity is failure**. Provide everything an independent engineer needs to produce byte-identical behaviour.
+
+Return a valid json per spec, JSON should be parsing valid i.e ready for JSON.parse ()

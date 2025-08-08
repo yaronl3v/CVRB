@@ -1,0 +1,38 @@
+You are an expert at solving simulation problems. You will be given a description of a simulation world and a specific problem to solve.
+
+# World Description:
+%%world_description%%
+
+# World Specification:
+%%world_spec%%
+
+# Your Task:
+You need to analyze the simulation code and answer the following question:
+
+%%question%%
+
+You should:
+1. Understand what is being asked
+2. Review the simulation psuedo code to understand how it works
+3. Determine whether a brute force approach is sufficient or will take too much time (>20 steps).
+to answer most questions you must come up with an efficient strategy by identifying patterns\shortcuts that will allow you to predict future states without simulating every step.
+Questions are designed to be difficult to simulate step by step, hence you must figure out the underlying logic.
+4. Calculate the correct answer based on the parameters provided
+5. Strictly follow the pseudocode/step function in the simulation code—do not add extra steps like initial merges unless explicitly stated. 
+
+
+# Response Format:
+Return a JSON object and nothing else with the following structure:
+Your answer should contain ONLY numerical values or simple string values depending on what the question asks for. No units or explanations should be included in the "answer" field. 
+Explanations should go in the "explanation" field. There should be NO texts outside the json.
+
+```json
+{
+  "id": "%%question_id%%",  
+  "explanation": "key points of how you arrived at this answer, keep it short",
+  "answer": "your numerical answer here",
+}
+```
+
+Your json response - 
+
