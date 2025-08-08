@@ -6,6 +6,8 @@ In summary: LLM creators generate mathematical worlds, LLM validators ensure eac
 
 For a comprehensive overview of CVRB's theory and methodology, see [CVRB_README.md](CVRB_README.md).  
 
+See live demo at https://cvrb.dev/
+
 ## Current Results
 
 | Rank | Model | Results | % Correct | Beats Next | 95% CI |
